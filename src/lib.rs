@@ -26,10 +26,10 @@ struct RegisterLogger {
 
 impl RegisterLogger {
     pub fn send_message(&self, socket: &Option<UnixStream>){
-        socket.as_ref().unwrap().write_all(&self.request_type.to_le_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name_length.to_le_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.request_type.to_ne_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.name_length.to_ne_bytes()).unwrap();
         socket.as_ref().unwrap().write_all(&self.name).unwrap();
-        socket.as_ref().unwrap().write_all(&self.logger_type.to_le_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.logger_type.to_ne_bytes()).unwrap();
     }
 }
 
@@ -44,12 +44,12 @@ struct LogMessage {
 
 impl LogMessage {
     pub fn send_message(&self, socket: &Option<UnixStream>){
-        socket.as_ref().unwrap().write_all(&self.request_type.to_le_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name_length.to_le_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.request_type.to_ne_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.name_length.to_ne_bytes()).unwrap();
         socket.as_ref().unwrap().write_all(&self.name).unwrap();
-        socket.as_ref().unwrap().write_all(&self.msg_length.to_le_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.msg_length.to_ne_bytes()).unwrap();
         socket.as_ref().unwrap().write_all(&self.msg).unwrap();
-        socket.as_ref().unwrap().write_all(&self.log_level.to_le_bytes()).unwrap();
+        socket.as_ref().unwrap().write_all(&self.log_level.to_ne_bytes()).unwrap();
     }
 }
 
