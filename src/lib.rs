@@ -70,7 +70,21 @@ impl Loglib {
 
         log_message.send_message(&self.log_socket);
     }
+}
 
+fn formatter(pattern: &str, args: &[&str]) -> String{
+    let v: Vec<_> = pattern.match_indices("{}").collect();
+
+    if v.len() != args.len() {
+        return format!("Invalid pattern: {}", pattern);
+    }
+
+    let mut final_str = String::from(pattern);
+    for arg in args {
+        final_str = final_str.replacen("{}", arg, 1);
+    }
+
+    final_str
 }
 
 #[cfg(test)]
@@ -89,5 +103,38 @@ mod tests {
         let mut ll = Loglib::new(String::from("msgtest99xx"));
         ll.register_logger(LoggerType::FILE, &"msgtest99xx");
         ll.send_log("important message", LogLevel::ERROR, "msgtest99xx");
+    }
+
+
+    #[test]
+    fn formatter_test1(){
+        let pattern = "there is no placeholder here";
+        let args: [&str; 0] = [];
+        let ret = formatter(pattern, &args);
+        assert_eq!(ret, "there is no placeholder here");
+    }
+
+    #[test]
+    fn formatter_test2(){
+        let pattern = "wrong number of placeholders";
+        let args: [&str; 1] = ["asd"];
+        let ret = formatter(pattern, &args);
+        assert_eq!(ret, "Invalid pattern: wrong number of placeholders");
+    }
+
+    #[test]
+    fn formatter_test3(){
+        let pattern = "{} {}";
+        let args: [&str; 2] = ["one", "two"];
+        let ret = formatter(pattern, &args);
+        assert_eq!(ret, "one two");
+    }
+
+    #[test]
+    fn formatter_test4(){
+        let pattern = "assdfsdgf{}dsfgsdfg{}sfdgsdg{}";
+        let args: [&str; 3] = ["one", "two", "three"];
+        let ret = formatter(pattern, &args);
+        assert_eq!(ret, "assdfsdgfonedsfgsdfgtwosfdgsdgthree");
     }
 }
