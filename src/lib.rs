@@ -91,9 +91,7 @@ impl Loglib {
             name_length: name.len() as i32,
             logger_type: logger_type as i32
         };
-        // add a null-terminator
-        register_logger.name.push(0);
-        register_logger.name_length += 1;
+
         register_logger.send_message(&self.log_socket);
     }
 
@@ -101,17 +99,11 @@ impl Loglib {
         let mut log_message = LogMessage{
             log_level: level as i32,
             msg: msg.as_bytes().to_vec(),
-            request_type: RequestType::LogMessagw as i32,
+            request_type: RequestType::LogMessage as i32,
             name: name.as_bytes().to_vec(),
             msg_length: msg.len() as i32,
             name_length: name.len() as i32
         };
-
-        // null-terminators
-        log_message.msg.push(0);
-        log_message.msg_length += 1;
-        log_message.name.push(0);
-        log_message.name_length += 1;
 
         log_message.send_message(&self.log_socket);
     }
@@ -131,8 +123,8 @@ mod tests {
 
     #[test]
     fn register_logger_test(){
-        let mut ll = Loglib::new(String::from("testerino"));
-        ll.register_logger(LoggerType::FILE, &"testerino1986");
-        ll.send_log("important message", LogLevel::ERROR, "testerino1986");
+        let mut ll = Loglib::new(String::from("msgtest"));
+        ll.register_logger(LoggerType::FILE, &"msgtest");
+        ll.send_log("important message", LogLevel::ERROR, "msgtest");
     }
 }

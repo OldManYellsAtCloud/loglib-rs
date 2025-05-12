@@ -14,7 +14,7 @@ pub mod enums {
 
     pub enum RequestType {
         NewLogger = 0,
-        LogMessagw
+        LogMessage
     }
 }
 
@@ -52,10 +52,10 @@ mod tests {
 
     #[test]
     fn request_type_value_test(){
-        let new_logger = RequestType::NEW_LOGGER as i32;
+        let new_logger = RequestType::NewLogger as i32;
         assert_eq!(new_logger, 0);
 
-        let log_message = RequestType::LOG_MESSAGE as i32;
+        let log_message = RequestType::LogMessage as i32;
         assert_eq!(log_message, new_logger + 1);
     }
 }
