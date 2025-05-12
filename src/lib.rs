@@ -4,53 +4,21 @@
 //! however since C/C++ preprocessor macros are not supported in
 //! Rust through FFI, it is rewritten in Rust itself.
 
+
 use std::env;
 use std::io::Write;
 use std::os::unix::net::UnixStream;
-use crate::enums::enums::{LoggerType, LogLevel, RequestType};
+use crate::enums::{LoggerType, LogLevel, RequestType};
+use crate::structs::RegisterLogger::RegisterLogger;
+use crate::structs::LogMessage::LogMessage;
+
 mod enums;
+mod structs;
 
 struct Loglib {
     log_socket: Option<UnixStream>,
     default_name: String,
     min_log_level: LogLevel
-}
-
-#[repr(C)]
-struct RegisterLogger {
-    request_type: i32,
-    name_length: i32,
-    name: Vec<u8>,
-    logger_type: i32
-}
-
-impl RegisterLogger {
-    pub fn send_message(&self, socket: &Option<UnixStream>){
-        socket.as_ref().unwrap().write_all(&self.request_type.to_ne_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name_length.to_ne_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name).unwrap();
-        socket.as_ref().unwrap().write_all(&self.logger_type.to_ne_bytes()).unwrap();
-    }
-}
-
-struct LogMessage {
-    request_type: i32,
-    name_length: i32,
-    name: Vec<u8>,
-    msg_length: i32,
-    msg: Vec<u8>,
-    log_level: i32
-}
-
-impl LogMessage {
-    pub fn send_message(&self, socket: &Option<UnixStream>){
-        socket.as_ref().unwrap().write_all(&self.request_type.to_ne_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name_length.to_ne_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.name).unwrap();
-        socket.as_ref().unwrap().write_all(&self.msg_length.to_ne_bytes()).unwrap();
-        socket.as_ref().unwrap().write_all(&self.msg).unwrap();
-        socket.as_ref().unwrap().write_all(&self.log_level.to_ne_bytes()).unwrap();
-    }
 }
 
 impl Loglib {
@@ -85,25 +53,20 @@ impl Loglib {
     }
 
     pub fn register_logger(&mut self, logger_type: LoggerType, name: &str){
-        let mut register_logger = RegisterLogger {
-            request_type: RequestType::NewLogger as i32,
-            name: name.as_bytes().to_vec(),
-            name_length: name.len() as i32,
-            logger_type: logger_type as i32
-        };
+        let mut register_logger = RegisterLogger::new (
+            name.as_bytes().to_vec(),
+            logger_type as i32
+        );
 
         register_logger.send_message(&self.log_socket);
     }
 
     pub fn send_log(&mut self, msg: &str, level: LogLevel, name: &str){
-        let mut log_message = LogMessage{
-            log_level: level as i32,
-            msg: msg.as_bytes().to_vec(),
-            request_type: RequestType::LogMessage as i32,
-            name: name.as_bytes().to_vec(),
-            msg_length: msg.len() as i32,
-            name_length: name.len() as i32
-        };
+        let mut log_message = LogMessage::new(
+            name.as_bytes().to_vec(),
+            msg.as_bytes().to_vec(),
+            level as i32,
+        );
 
         log_message.send_message(&self.log_socket);
     }
@@ -123,8 +86,8 @@ mod tests {
 
     #[test]
     fn register_logger_test(){
-        let mut ll = Loglib::new(String::from("msgtest"));
-        ll.register_logger(LoggerType::FILE, &"msgtest");
-        ll.send_log("important message", LogLevel::ERROR, "msgtest");
+        let mut ll = Loglib::new(String::from("msgtest99xx"));
+        ll.register_logger(LoggerType::FILE, &"msgtest99xx");
+        ll.send_log("important message", LogLevel::ERROR, "msgtest99xx");
     }
 }
