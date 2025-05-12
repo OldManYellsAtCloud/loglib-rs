@@ -70,6 +70,51 @@ impl Loglib {
 
         log_message.send_message(&self.log_socket);
     }
+
+    fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel){
+        let final_msg = formatter(pattern, args);
+        self.send_log(&final_msg, loglevel, &self.default_name);
+    }
+
+    pub fn debug_f(&mut self, pattern: &str, args: &[&str]){
+        self.format_and_log(pattern, args, LogLevel::DEBUG);
+    }
+
+    pub fn info_f(&mut self, pattern: &str, args: &[&str]){
+        self.format_and_log(pattern, args, LogLevel::INFO);
+    }
+
+    pub fn warning_f(&mut self, pattern: &str, args: &[&str]){
+        self.format_and_log(pattern, args, LogLevel::WARNING);
+    }
+
+    pub fn error_f(&mut self, pattern: &str, args: &[&str]){
+        self.format_and_log(pattern, args, LogLevel::ERROR);
+    }
+
+    pub fn fatal_f(&mut self, pattern: &str, args: &[&str]){
+        self.format_and_log(pattern, args, LogLevel::FATAL);
+    }
+
+    pub fn debug(&mut self, msg: &str){
+        self.format_and_log(msg, &[], LogLevel::DEBUG);
+    }
+
+    pub fn info(&mut self, msg: &str){
+        self.format_and_log(msg, &[], LogLevel::INFO);
+    }
+
+    pub fn warning(&mut self, msg: &str){
+        self.format_and_log(msg, &[], LogLevel::WARNING);
+    }
+
+    pub fn error(&mut self, msg: &str){
+        self.format_and_log(msg, &[], LogLevel::ERROR);
+    }
+
+    pub fn fatal(&mut self, msg: &str){
+        self.format_and_log(msg, &[], LogLevel::FATAL);
+    }
 }
 
 fn formatter(pattern: &str, args: &[&str]) -> String{
