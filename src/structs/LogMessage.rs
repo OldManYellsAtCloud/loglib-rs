@@ -1,6 +1,7 @@
 use std::io::Write;
 use std::os::unix::net::UnixStream;
 use crate::enums::RequestType;
+use crate::send_log_trait::send_log;
 
 pub struct LogMessage {
     request_type: i32,
@@ -22,8 +23,10 @@ impl LogMessage {
             log_level
         }
     }
+}
 
-    pub fn send_message(&self, socket: &Option<UnixStream>) {
+impl send_log for LogMessage {
+    fn send_message(&self, socket: &Option<UnixStream>) {
         socket.as_ref().unwrap().write_all(&self.request_type.to_ne_bytes()).unwrap();
         socket.as_ref().unwrap().write_all(&self.name_length.to_ne_bytes()).unwrap();
         socket.as_ref().unwrap().write_all(&self.name).unwrap();

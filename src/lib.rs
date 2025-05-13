@@ -7,3 +7,4 @@
 mod enums;
 mod structs;
 mod logger;
+mod send_log_trait;

@@ -3,21 +3,22 @@ use std::os::unix::net::UnixStream;
 use crate::enums::{LoggerType, LogLevel};
 use crate::structs::LogMessage::LogMessage;
 use crate::structs::RegisterLogger::RegisterLogger;
+use crate::send_log_trait::send_log;
 
 pub struct Loglib {
     log_socket: Option<UnixStream>,
     default_name: String,
-    min_log_level: LogLevel
+    min_log_level: LogLevel,
+    message_buffer: Vec<Box<dyn send_log>>
 }
 
 impl Loglib {
     pub fn new(name: String) -> Loglib {
-        let stream_path = Self::get_socket_path();
-
         Loglib {
             log_socket: Self::try_connection(),
             default_name: name,
-            min_log_level: LogLevel::INFO
+            min_log_level: LogLevel::INFO,
+            message_buffer: Vec::new()
         }
     }
 
@@ -34,8 +35,8 @@ impl Loglib {
         let stream = UnixStream::connect(Self::get_socket_path());
         match stream {
             Ok(connection) => Some(connection),
-            Err(_) => {
-                eprintln!("Couldn't connect to log socket.");
+            Err(e) => {
+                eprintln!("Couldn't connect to log socket: {e}");
                 None
             }
         }
@@ -47,7 +48,16 @@ impl Loglib {
             logger_type as i32
         );
 
-        register_logger.send_message(&self.log_socket);
+        if self.log_socket.is_none() {
+            self.log_socket = Self::try_connection();
+        }
+
+        if self.log_socket.is_none() {
+            self.message_buffer.push(Box::new(register_logger));
+        } else {
+            self.send_late_messages();
+            register_logger.send_message(&self.log_socket);
+        }
     }
 
     pub fn send_log(&mut self, msg: &str, level: LogLevel, name: Option<&str>){
@@ -63,11 +73,26 @@ impl Loglib {
             level as i32,
         );
 
-        log_message.send_message(&self.log_socket);
+        if self.log_socket.is_none() {
+            self.log_socket = Self::try_connection();
+        }
+
+        if self.log_socket.is_none() {
+            self.message_buffer.push(Box::new(log_message));
+        } else {
+            self.send_late_messages();
+            log_message.send_message(&self.log_socket);
+        }
     }
 
     pub fn set_min_log_level(&mut self, log_level: LogLevel){
         self.min_log_level = log_level;
+    }
+
+    fn send_late_messages(&self){
+        for msg in self.message_buffer {
+            msg.send_message(&self.log_socket);
+        }
     }
 
     fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel, name: Option<&str>){
@@ -190,7 +215,7 @@ mod tests {
     fn register_logger_test(){
         let mut ll = Loglib::new(String::from("msgtest99xx"));
         ll.register_logger(LoggerType::FILE, &"msgtest99xx");
-        ll.send_log("important message", LogLevel::ERROR);
+        ll.send_log("important message", LogLevel::ERROR, None);
     }
 
 
