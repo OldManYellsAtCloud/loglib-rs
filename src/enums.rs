@@ -1,4 +1,4 @@
-
+#[derive(PartialEq, PartialOrd)]
 pub enum LogLevel {
     DEBUG = 0,
     INFO,

@@ -60,7 +60,14 @@ impl Loglib {
         log_message.send_message(&self.log_socket);
     }
 
+    pub fn set_min_log_level(&mut self, log_level: LogLevel){
+        self.min_log_level = log_level;
+    }
+
     fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel){
+        if loglevel < self.min_log_level {
+            return;
+        }
         let  final_msg = formatter(pattern, args);
         self.send_log(&final_msg, loglevel);
     }
