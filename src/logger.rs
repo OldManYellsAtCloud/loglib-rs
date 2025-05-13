@@ -50,9 +50,15 @@ impl Loglib {
         register_logger.send_message(&self.log_socket);
     }
 
-    pub fn send_log(&mut self, msg: &str, level: LogLevel){
+    pub fn send_log(&mut self, msg: &str, level: LogLevel, name: Option<&str>){
+        let name_to_send = if let Some(n) = name {
+            n
+        } else {
+            self.default_name.as_str()
+        };
+
         let mut log_message = LogMessage::new(
-            self.default_name.as_bytes().to_vec(),
+            name_to_send.as_bytes().to_vec(),
             msg.as_bytes().to_vec(),
             level as i32,
         );
@@ -64,52 +70,92 @@ impl Loglib {
         self.min_log_level = log_level;
     }
 
-    fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel){
+    fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel, name: Option<&str>){
         if loglevel < self.min_log_level {
             return;
         }
         let  final_msg = formatter(pattern, args);
-        self.send_log(&final_msg, loglevel);
+        self.send_log(&final_msg, loglevel, name);
     }
 
     pub fn debug_f(&mut self, pattern: &str, args: &[&str]){
-        self.format_and_log(pattern, args, LogLevel::DEBUG);
+        self.format_and_log(pattern, args, LogLevel::DEBUG, None);
     }
 
     pub fn info_f(&mut self, pattern: &str, args: &[&str]){
-        self.format_and_log(pattern, args, LogLevel::INFO);
+        self.format_and_log(pattern, args, LogLevel::INFO, None);
     }
 
     pub fn warning_f(&mut self, pattern: &str, args: &[&str]){
-        self.format_and_log(pattern, args, LogLevel::WARNING);
+        self.format_and_log(pattern, args, LogLevel::WARNING, None);
     }
 
     pub fn error_f(&mut self, pattern: &str, args: &[&str]){
-        self.format_and_log(pattern, args, LogLevel::ERROR);
+        self.format_and_log(pattern, args, LogLevel::ERROR, None);
     }
 
     pub fn fatal_f(&mut self, pattern: &str, args: &[&str]){
-        self.format_and_log(pattern, args, LogLevel::FATAL);
+        self.format_and_log(pattern, args, LogLevel::FATAL, None);
     }
 
     pub fn debug(&mut self, msg: &str){
-        self.format_and_log(msg, &[], LogLevel::DEBUG);
+        self.format_and_log(msg, &[], LogLevel::DEBUG, None);
     }
 
     pub fn info(&mut self, msg: &str){
-        self.format_and_log(msg, &[], LogLevel::INFO);
+        self.format_and_log(msg, &[], LogLevel::INFO, None);
     }
 
     pub fn warning(&mut self, msg: &str){
-        self.format_and_log(msg, &[], LogLevel::WARNING);
+        self.format_and_log(msg, &[], LogLevel::WARNING, None);
     }
 
     pub fn error(&mut self, msg: &str){
-        self.format_and_log(msg, &[], LogLevel::ERROR);
+        self.format_and_log(msg, &[], LogLevel::ERROR, None);
     }
 
     pub fn fatal(&mut self, msg: &str){
-        self.format_and_log(msg, &[], LogLevel::FATAL);
+        self.format_and_log(msg, &[], LogLevel::FATAL, None);
+    }
+
+    pub fn debug_fn(&mut self, pattern: &str, args: &[&str], name: &str){
+        self.format_and_log(pattern, args, LogLevel::DEBUG, Some(name));
+    }
+
+    pub fn info_fn(&mut self, pattern: &str, args: &[&str], name: &str){
+        self.format_and_log(pattern, args, LogLevel::INFO, Some(name));
+    }
+
+    pub fn warning_fn(&mut self, pattern: &str, args: &[&str], name: &str){
+        self.format_and_log(pattern, args, LogLevel::WARNING, Some(name));
+    }
+
+    pub fn error_fn(&mut self, pattern: &str, args: &[&str], name: &str){
+        self.format_and_log(pattern, args, LogLevel::ERROR, Some(name));
+    }
+
+    pub fn fatal_fn(&mut self, pattern: &str, args: &[&str], name: &str){
+        self.format_and_log(pattern, args, LogLevel::FATAL, Some(name));
+    }
+
+    pub fn debug_n(&mut self, msg: &str, name: &str){
+        self.format_and_log(msg, &[], LogLevel::DEBUG, Some(name));
+    }
+
+    pub fn info_n(&mut self, msg: &str, name: &str){
+        self.format_and_log(msg, &[], LogLevel::INFO, Some(name));
+    }
+
+    pub fn warning_n(&mut self, msg: &str, name: &str){
+        self.format_and_log(msg, &[], LogLevel::WARNING, Some(name));
+    }
+
+    pub fn error_n(&mut self, msg: &str, name: &str){
+        self.format_and_log(msg, &[], LogLevel::ERROR, Some(name));
+    }
+
+    pub fn fatal_n(&mut self, msg: &str, name: &str){
+        self.format_and_log(msg, &[], LogLevel::FATAL, Some(name));
     }
 }
 
