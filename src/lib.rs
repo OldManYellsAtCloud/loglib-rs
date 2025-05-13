@@ -61,9 +61,9 @@ impl Loglib {
         register_logger.send_message(&self.log_socket);
     }
 
-    pub fn send_log(&mut self, msg: &str, level: LogLevel, name: &str){
+    pub fn send_log(&mut self, msg: &str, level: LogLevel){
         let mut log_message = LogMessage::new(
-            name.as_bytes().to_vec(),
+            self.default_name.as_bytes().to_vec(),
             msg.as_bytes().to_vec(),
             level as i32,
         );
@@ -72,8 +72,8 @@ impl Loglib {
     }
 
     fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel){
-        let final_msg = formatter(pattern, args);
-        self.send_log(&final_msg, loglevel, &self.default_name);
+        let  final_msg = formatter(pattern, args);
+        self.send_log(&final_msg, loglevel);
     }
 
     pub fn debug_f(&mut self, pattern: &str, args: &[&str]){
@@ -147,7 +147,7 @@ mod tests {
     fn register_logger_test(){
         let mut ll = Loglib::new(String::from("msgtest99xx"));
         ll.register_logger(LoggerType::FILE, &"msgtest99xx");
-        ll.send_log("important message", LogLevel::ERROR, "msgtest99xx");
+        ll.send_log("important message", LogLevel::ERROR);
     }
 
 
@@ -181,5 +181,25 @@ mod tests {
         let args: [&str; 3] = ["one", "two", "three"];
         let ret = formatter(pattern, &args);
         assert_eq!(ret, "assdfsdgfonedsfgsdfgtwosfdgsdgthree");
+    }
+
+    #[test]
+    fn formatter_test5(){
+        let mut ll = Loglib::new(String::from("formatter_test5"));
+        ll.register_logger(LoggerType::FILE, &"formatter_test5");
+        ll.debug("debug message without args");
+        ll.debug_f("debug message arg1: {}, arg2: {}", &["1111", "2222"]);
+
+        ll.info("info message without args");
+        ll.info_f("info message arg1: {}, arg2: {}", &["1111", "2222"]);
+
+        ll.warning("warning message without args");
+        ll.warning_f("warning message arg1: {}, arg2: {}", &["1111", "2222"]);
+
+        ll.error("error message without args");
+        ll.error_f("error message arg1: {}, arg2: {}", &["1111", "2222"]);
+
+        ll.fatal("fatal message without args");
+        ll.fatal_f("fatal message arg1: {}, arg2: {}", &["1111", "2222"]);
     }
 }
