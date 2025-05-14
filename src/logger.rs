@@ -89,10 +89,11 @@ impl Loglib {
         self.min_log_level = log_level;
     }
 
-    fn send_late_messages(&self){
-        for msg in self.message_buffer {
+    fn send_late_messages(&mut self){
+        for msg in &self.message_buffer {
             msg.send_message(&self.log_socket);
         }
+        &self.message_buffer.clear();
     }
 
     fn format_and_log(&mut self, pattern: &str, args: &[&str], loglevel: LogLevel, name: Option<&str>){
