@@ -42,7 +42,9 @@ impl Loglib {
         }
     }
 
-    pub fn register_logger(&mut self, logger_type: LoggerType, name: &str){
+    pub fn register_logger(&mut self, logger_type: LoggerType, name: Option<&str>){
+        let name = name.unwrap_or(&self.default_name);
+
         let mut register_logger = RegisterLogger::new (
             name.as_bytes().to_vec(),
             logger_type as i32
@@ -61,14 +63,10 @@ impl Loglib {
     }
 
     pub fn send_log(&mut self, msg: &str, level: LogLevel, name: Option<&str>){
-        let name_to_send = if let Some(n) = name {
-            n
-        } else {
-            self.default_name.as_str()
-        };
+        let name = name.unwrap_or(&self.default_name);
 
         let mut log_message = LogMessage::new(
-            name_to_send.as_bytes().to_vec(),
+            name.as_bytes().to_vec(),
             msg.as_bytes().to_vec(),
             level as i32,
         );
@@ -215,7 +213,7 @@ mod tests {
     #[test]
     fn register_logger_test(){
         let mut ll = Loglib::new(String::from("msgtest99xx"));
-        ll.register_logger(LoggerType::FILE, &"msgtest99xx");
+        ll.register_logger(LoggerType::FILE, Some(&"msgtest99xx"));
         ll.send_log("important message", LogLevel::ERROR, None);
     }
 
@@ -255,7 +253,7 @@ mod tests {
     #[test]
     fn formatter_test5(){
         let mut ll = Loglib::new(String::from("formatter_test5"));
-        ll.register_logger(LoggerType::FILE, &"formatter_test5");
+        ll.register_logger(LoggerType::FILE, Some(&"formatter_test5"));
         ll.debug("debug message without args");
         ll.debug_f("debug message arg1: {}, arg2: {}", &["1111", "2222"]);
 
