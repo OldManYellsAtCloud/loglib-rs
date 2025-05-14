@@ -5,6 +5,35 @@ use crate::structs::LogMessage::LogMessage;
 use crate::structs::RegisterLogger::RegisterLogger;
 use crate::send_log_trait::send_log;
 
+#[macro_export]
+macro_rules! log {
+    ($log_lib:expr, $log_level:expr, $pattern:expr) => {
+        match $log_level {
+            LogLevel::DEBUG => $log_lib.debug($pattern),
+            LogLevel::INFO => $log_lib.info($pattern),
+            LogLevel::WARNING => $log_lib.warning($pattern),
+            LogLevel::ERROR => $log_lib.error($pattern),
+            LogLevel::FATAL => $log_lib.fatal($pattern),
+        }
+    };
+
+    ($log_lib:expr, $log_level:expr, $pattern:expr, $($args:tt),*) => {
+        let mut v = Vec::new();
+
+        $(
+            v.push(stringify!($args));
+        )*
+
+        match $log_level {
+            LogLevel::DEBUG => $log_lib.debug_f($pattern, v.as_ref()),
+            LogLevel::INFO => $log_lib.info_f($pattern, v.as_ref()),
+            LogLevel::WARNING => $log_lib.warning_f($pattern, v.as_ref()),
+            LogLevel::ERROR => $log_lib.error_f($pattern, v.as_ref()),
+            LogLevel::FATAL => $log_lib.fatal_f($pattern, v.as_ref()),
+        }
+    };
+}
+
 pub struct Loglib {
     log_socket: Option<UnixStream>,
     default_name: String,
