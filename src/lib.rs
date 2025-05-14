@@ -4,7 +4,7 @@
 //! however since C/C++ preprocessor macros are not supported in
 //! Rust through FFI, it is rewritten in Rust itself.
 
-mod enums;
-mod structs;
-mod logger;
-mod send_log_trait;
+pub mod enums;
+pub mod structs;
+pub mod logger;
+pub mod send_log_trait;
